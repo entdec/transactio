@@ -11,3 +11,14 @@ end
 ActiveSupport.on_load(:active_record) do
   include Transactio::ActiveRecord::Helpers
 end
+
+# Require frameworks
+if defined?(::Rails)
+  # Rails module is sometimes defined by gems like rails-html-sanitizer
+  # so we check for presence of Rails.application.
+  if defined?(::Rails.application)
+    require 'transactio/frameworks/rails'
+  else
+    ::Kernel.warn(::PaperTrail::E_RAILS_NOT_LOADED)
+  end
+end
