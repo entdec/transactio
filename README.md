@@ -22,7 +22,8 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Add a `TransactionLog` table to your application, which inherits from `Transactio::TransactionLog`.
+Add `transaction_loggable` to all your models you want logged.
 
 ## Development
 
