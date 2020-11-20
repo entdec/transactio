@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# require 'json'
+
 namespace :transactio do
   desc 'Release a new version'
   task :release do
@@ -19,11 +21,11 @@ namespace :transactio do
     load version_file
     puts "Updated version to #{Transactio::VERSION}"
 
-    package = JSON.parse(File.read('./package.json'))
-    package['version'] = Transactio::VERSION
-    File.open('./package.json', 'w') do |file|
-      file.puts(JSON.pretty_generate(package))
-    end
+    # package = JSON.parse(File.read('./package.json'))
+    # package['version'] = Transactio::VERSION
+    # File.open('./package.json', 'w') do |file|
+    #   file.puts(JSON.pretty_generate(package))
+    # end
 
     `git commit package.json lib/transactio/version.rb -m "Version #{Transactio::VERSION}"`
     `git push`
