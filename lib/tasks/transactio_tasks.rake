@@ -27,7 +27,7 @@ namespace :transactio do
     #   file.puts(JSON.pretty_generate(package))
     # end
 
-    `git commit package.json lib/transactio/version.rb -m "Version #{Transactio::VERSION}"`
+    `git commit lib/transactio/version.rb -m "Version #{Transactio::VERSION}"`
     `git push`
     `git tag #{Transactio::VERSION}`
     `git push --tags`
