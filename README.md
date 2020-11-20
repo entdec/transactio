@@ -22,7 +22,12 @@ Or install it yourself as:
 
 ## Usage
 
+Run `rails g transactio:install`
+
+Run migrations
+
 Add a `TransactionLog` table to your application, which inherits from `Transactio::TransactionLog`.
+
 Add `transaction_loggable` to all your models you want logged.
 
 ## Development
