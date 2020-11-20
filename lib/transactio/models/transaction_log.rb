@@ -2,6 +2,8 @@
 
 module Transactio
   class TransactionLog < ApplicationRecord
+    self.abstract_class = true
+
     has_many :entries, class_name: 'Transactio::TransactionLogEntry'
 
     # belongs_to :user, optional: true

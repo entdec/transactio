@@ -15,7 +15,7 @@ module Transactio
           # Only do this if we actually use a state machine
           if respond_to?(:state_machines) && state_machines.keys.all? { |key| column_names.include?(key.to_s) }
             state_machine.after_transition do |object, transition|
-              transaction_log = TransactionLog.current!
+              transaction_log = ::TransactionLog.current!
               transaction_log.entries
                              .create!(transaction_loggable: object, event: transition.event, from: transition.from, to: transition.to)
             end
@@ -36,7 +36,7 @@ module Transactio
 
       module ClassMethods
         def in_transaction_log(transaction_log)
-          transaction_log = TransactionLog.find(transaction_log) if transaction_log.is_a?(String)
+          transaction_log = ::TransactionLog.find(transaction_log) if transaction_log.is_a?(String)
 
           where(
             id: transaction_log.entries
@@ -60,7 +60,7 @@ module Transactio
         end
 
         def register_transaction_log
-          transaction_log = TransactionLog.current!
+          transaction_log = ::TransactionLog.current!
           transaction_log.entries
                          .create!(transaction_loggable: self,
                                   object: @transaction_loggable_attributes,
