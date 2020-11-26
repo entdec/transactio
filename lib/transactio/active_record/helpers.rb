@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'active_support/concern'
+
 module Transactio
   module ActiveRecord
     module Helpers
@@ -13,11 +15,13 @@ module Transactio
           has_many :transaction_log_entries, as: :transaction_loggable, class_name: 'Transactio::TransactionLogEntry'
 
           # Only do this if we actually use a state machine
-          if respond_to?(:state_machines) && state_machines.keys.all? { |key| column_names.include?(key.to_s) }
+          if respond_to?(:state_machines)
             state_machine.after_transition do |object, transition|
-              transaction_log = ::TransactionLog.current!
-              transaction_log.entries
-                             .create!(transaction_loggable: object, event: transition.event, from: transition.from, to: transition.to)
+              if object.class.has_state_machines_key_columns?
+                transaction_log = ::TransactionLog.current!
+                transaction_log.entries
+                               .create!(transaction_loggable: object, event: transition.event, from: transition.from, to: transition.to)
+              end
             end
           end
 
@@ -31,6 +35,10 @@ module Transactio
 
           send :include, Transactio::ActiveRecord::Helpers::InstanceMethods
           extend(Transactio::ActiveRecord::Helpers::ClassMethods)
+        end
+
+        def has_state_machines_key_columns?
+          state_machines.keys.all? { |key| column_names.include?(key.to_s) }
         end
       end
 
