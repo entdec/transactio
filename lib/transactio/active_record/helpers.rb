@@ -18,7 +18,7 @@ module Transactio
           if respond_to?(:state_machines)
             state_machine.after_transition do |object, transition|
               if object.class.has_state_machines_key_columns?
-                transaction_log = ::TransactionLog.current!
+                transaction_log = Transactio::TransactionLog.current!
                 transaction_log.entries
                                .create!(transaction_loggable: object, event: transition.event, from: transition.from, to: transition.to)
               end
@@ -44,13 +44,29 @@ module Transactio
 
       module ClassMethods
         def in_transaction_log(transaction_log)
-          transaction_log = ::TransactionLog.find(transaction_log) if transaction_log.is_a?(String)
+          transaction_log = Transactio::TransactionLog.find(transaction_log) if transaction_log.is_a?(String)
 
           where(
             id: transaction_log.entries
                                .where(transaction_loggable_type: name)
                                .select(:transaction_loggable_id)
           )
+        end
+
+        def insert_all!(attributes, returning: nil)
+          records = super(attributes, returning: returning)
+          transaction_attributes = records.map { |r| { transaction_log_id: Transactio::TransactionLog.current!.id, transaction_loggable_id: r['id'], transaction_loggable_type: name, created_at: now, updated_at: now, object_changes: attributes.map { |k, v| [k, [nil, v]] } } }
+          Transactio::TransactionLogEntry.insert_all!(transaction_attributes)
+
+          records
+        end
+
+        def insert_all(attributes, returning: nil, unique_by: nil)
+          records = super(attributes, returning: returning, unique_by: unique_by)
+          transaction_attributes = records.map { |r| { transaction_log_id: Transactio::TransactionLog.current!.id, transaction_loggable_id: r['id'], transaction_loggable_type: name, created_at: now, updated_at: now, object_changes: attributes.map { |k, v| [k, [nil, v]] } } }
+          Transactio::TransactionLogEntry.insert_all!(transaction_attributes)
+
+          records
         end
       end
 
