@@ -14,7 +14,7 @@ module Transactio
         if respond_to?(:state_machines)
           state_machine.after_transition do |object, transition|
             if object.class.has_state_machines_key_columns?
-              transaction_log = Transactio::TransactionLog.current!
+              transaction_log = ::TransactionLog.current!
               transaction_log.entries
                              .create!(transaction_loggable: object, event: transition.event, from: transition.from, to: transition.to)
             end
@@ -59,7 +59,7 @@ module Transactio
         end
 
         def in_transaction_log(transaction_log)
-          transaction_log = Transactio::TransactionLog.find(transaction_log) if transaction_log.is_a?(String)
+          transaction_log = ::TransactionLog.find(transaction_log) if transaction_log.is_a?(String)
 
           where(
             id: transaction_log.entries
@@ -70,20 +70,43 @@ module Transactio
 
         def insert_all!(attributes, returning: nil)
           records = super(attributes, returning: attribute_names)
-          now = Time.now
-          transaction_attributes = records.map { |r| { transaction_log_id: Transactio::TransactionLog.current!.id, transaction_loggable_id: r['id'], transaction_loggable_type: name, created_at: now, updated_at: now, object_changes: r.map { |k, v| [k, [nil, v]] } } }
-          Transactio::TransactionLogEntry.insert_all!(transaction_attributes)
+          create_transaction_log_entries(records)
 
           records
         end
 
         def insert_all(attributes, returning: nil, unique_by: nil)
           records = super(attributes, returning: attribute_names, unique_by: unique_by)
-          now = Time.now
-          transaction_attributes = records.map { |r| { transaction_log_id: Transactio::TransactionLog.current!.id, transaction_loggable_id: r['id'], transaction_loggable_type: name, created_at: now, updated_at: now, object_changes: r.map { |k, v| [k, [nil, v]] } } }
-          Transactio::TransactionLogEntry.insert_all!(transaction_attributes)
+          create_transaction_log_entries(records)
 
           records
+        end
+
+        def upsert_all(attributes, returning: nil, unique_by: nil)
+          records = super(attributes, returning: attribute_names, unique_by: unique_by)
+          create_transaction_log_entries(records)
+
+          records
+        end
+
+        def upsert(attributes, returning: nil, unique_by: nil)
+          upsert_all([attributes], returning: returning, unique_by: unique_by)
+        end
+
+        def insert!(attributes, returning: nil)
+          insert_all([attributes], returning: returning)
+        end
+
+        def insert(attributes, returning: nil, unique_by: nil)
+          insert_all!([attributes], returning: returning, unique_by: unique_by)
+        end
+
+        private
+
+        def create_transaction_log_entries(records)
+          now = Time.now
+          transaction_attributes = records.map { |r| { transaction_log_id: ::TransactionLog.current!.id, transaction_loggable_id: r['id'], transaction_loggable_type: name, created_at: now, updated_at: now, object_changes: r.map { |k, v| [k, [nil, v]] } } }
+          Transactio::TransactionLogEntry.upsert_all(transaction_attributes)
         end
       end
     end
