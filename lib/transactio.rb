@@ -1,4 +1,5 @@
 require 'transactio/version'
+require 'transactio/active_record/transaction_loggable'
 require 'transactio/active_record/helpers'
 require 'transactio/models/application_record'
 require 'transactio/models/transaction_log'
