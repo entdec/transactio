@@ -55,6 +55,7 @@ module Transactio
 
         def insert_all!(attributes, returning: nil)
           records = super(attributes, returning: returning)
+          now = Time.now
           transaction_attributes = records.map { |r| { transaction_log_id: Transactio::TransactionLog.current!.id, transaction_loggable_id: r['id'], transaction_loggable_type: name, created_at: now, updated_at: now, object_changes: attributes.map { |k, v| [k, [nil, v]] } } }
           Transactio::TransactionLogEntry.insert_all!(transaction_attributes)
 
@@ -63,6 +64,7 @@ module Transactio
 
         def insert_all(attributes, returning: nil, unique_by: nil)
           records = super(attributes, returning: returning, unique_by: unique_by)
+          now = Time.now
           transaction_attributes = records.map { |r| { transaction_log_id: Transactio::TransactionLog.current!.id, transaction_loggable_id: r['id'], transaction_loggable_type: name, created_at: now, updated_at: now, object_changes: attributes.map { |k, v| [k, [nil, v]] } } }
           Transactio::TransactionLogEntry.insert_all!(transaction_attributes)
 
