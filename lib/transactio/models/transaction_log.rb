@@ -6,6 +6,7 @@ module Transactio
 
     has_many :entries, class_name: 'Transactio::TransactionLogEntry'
 
+    after_rollback :clear_current!
     after_commit :clear_current!
 
     default_scope -> { order(created_at: :desc) }
