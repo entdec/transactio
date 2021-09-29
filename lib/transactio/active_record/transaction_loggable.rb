@@ -105,7 +105,7 @@ module Transactio
 
         def create_transaction_log_entries(records)
           now = Time.now
-          transaction_attributes = records.map { |r| { transaction_log_id: ::TransactionLog.current!.id, transaction_loggable_id: r['id'], transaction_loggable_type: name, created_at: now, updated_at: now, object_changes: r.map { |k, v| [k, [nil, v]] } } }
+          transaction_attributes = records.map { |r| { transaction_log_id: ::TransactionLog.current!.id, transaction_loggable_id: r['id'], transaction_loggable_type: name, created_at: now, updated_at: now, object_changes: r.map { |k, v| [k, [nil, v]] }.to_h } }
           Transactio::TransactionLogEntry.upsert_all(transaction_attributes)
         end
       end
