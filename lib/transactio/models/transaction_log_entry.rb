@@ -10,6 +10,7 @@ module Transactio
     default_scope -> { order(created_at: :desc) }
 
     scope :ascending, -> { reorder(created_at: :asc) }
+    scope :descending, -> { reorder(created_at: :desc) }
     scope :with_object_change_from, lambda { |field, change_from|
                                       where("object_changes -> '#{field}' ->> 0 = ?", change_from)
                                     }
