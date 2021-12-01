@@ -10,6 +10,10 @@ module Transactio
     default_scope -> { order(created_at: :desc) }
 
     scope :ascending, -> { reorder(created_at: :asc) }
+    scope :with_object_change_from, lambda { |field, change_from|
+                                      where("object_changes -> '#{field}' ->> 0 = ?", change_from)
+                                    }
+    scope :with_object_change_to, ->(field, change_to) { where("object_changes -> '#{field}' ->> 1 = ?", change_to) }
 
     def object_change?(attribute)
       return false if object_change_from(attribute) == object_change_to(attribute)
