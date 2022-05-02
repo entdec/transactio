@@ -15,6 +15,7 @@ module Transactio
                                       where("object_changes -> '#{field}' ->> 0 = ?", change_from)
                                     }
     scope :with_object_change_to, ->(field, change_to) { where("object_changes -> '#{field}' ->> 1 = ?", change_to) }
+    scope :with_object_change_not_to, ->(field, change_not_to) { where("object_changes -> '#{field}' ->> 1 != ?", change_not_to) }
 
     def object_change?(attribute)
       return false if object_change_from(attribute) == object_change_to(attribute)
