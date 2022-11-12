@@ -27,5 +27,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "activerecord", ">= 6"
 
-  spec.add_development_dependency 'auxilium', '~> 0.2'
+  spec.add_development_dependency 'auxilium'
 end
